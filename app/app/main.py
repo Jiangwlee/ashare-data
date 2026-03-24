@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
+from app.api.routes.consecutive_red import router as consecutive_red_router
 from app.api.routes.emotion import router as emotion_router
 from app.api.routes.health import router as health_router
 from app.api.routes.kline import router as kline_router
@@ -32,3 +33,4 @@ app.include_router(theme_pool_router)
 app.include_router(kline_router)
 app.include_router(market_reviews_router)
 app.include_router(emotion_router)
+app.include_router(consecutive_red_router)
