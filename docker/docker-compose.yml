@@ -12,7 +12,7 @@ services:
       - TZ=Asia/Shanghai
       - ASHARE_PLATFORM_HOME=/data
     volumes:
-      - ./data:/data
+      - ../data:/data
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
       interval: 30s

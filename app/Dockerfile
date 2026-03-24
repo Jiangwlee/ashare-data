@@ -10,7 +10,9 @@ RUN sed -i 's|http://deb.debian.org/debian|https://mirrors.aliyun.com/debian|g; 
 
 COPY pyproject.toml /app/pyproject.toml
 COPY ashare_data /app/ashare_data
-COPY app /app/app
+COPY app/app /app/app
+COPY app/alembic.ini /app/alembic.ini
+COPY app/alembic /app/alembic
 
 RUN python -m pip install --upgrade pip \
     && python -m pip install . \
