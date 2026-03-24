@@ -1,0 +1,16 @@
+{
+  "requested_end_date": "20260313",
+  "resolved_snapshot_date": "20260313",
+  "history_days_requested": 30,
+  "history_days_fetched": 30,
+  "first_date": "20260123",
+  "last_date": "20260313",
+  "snapshot_date": "20260313",
+  "continuous_limit_up_groups": 4,
+  "block_top_count": 20,
+  "output_files": {
+    "history": "apps/ashare-platform/backend/data/ephemeral/ths/ths_history_30d_20260313.json",
+    "snapshot": "apps/ashare-platform/backend/data/ephemeral/ths/ths_snapshot_20260313.json",
+    "summary": "apps/ashare-platform/backend/data/ephemeral/ths/ths_history_30d_20260313_summary.json"
+  }
+}

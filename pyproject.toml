@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ashare-platform"
+version = "0.1.0"
+description = "A股数据采集与平台服务（爬虫、券商接口、数据过滤、FastAPI后端）"
+requires-python = ">=3.10"
+dependencies = [
+    "beautifulsoup4>=4.12.0",
+    "rich>=13.7.0",
+    "scrapling[fetchers]>=0.4.0",
+    "alembic>=1.14.0,<2.0",
+    "fastapi>=0.115.0",
+    "sqlalchemy>=2.0.0,<3.0",
+    "uvicorn[standard]>=0.34.0",
+]
+
+[project.scripts]
+ashare-platform = "app.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ashare_data*", "app*"]
