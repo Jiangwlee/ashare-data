@@ -13,11 +13,16 @@ COPY ashare_data /app/ashare_data
 COPY app/app /app/app
 COPY app/alembic.ini /app/alembic.ini
 COPY app/alembic /app/alembic
+COPY app/deploy /app/deploy
 
 RUN python -m pip install --upgrade pip \
     && python -m pip install . \
-    && mkdir -p /var/log/supervisor
+    && mkdir -p /var/log/supervisor \
+    && apt-get update && apt-get install -y --no-install-recommends cron && rm -rf /var/lib/apt/lists/* \
+    && chmod +x /app/deploy/start.sh /app/deploy/run_scheduled_collect.sh \
+    && cp /app/deploy/ashare-platform.cron /etc/cron.d/ashare-platform \
+    && chmod 644 /etc/cron.d/ashare-platform
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["bash", "/app/deploy/start.sh"]
