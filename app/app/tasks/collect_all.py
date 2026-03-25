@@ -6,6 +6,7 @@ from typing import Any
 
 from app.core.runtime import today_cn
 from app.pipelines.build_consecutive_red import build_consecutive_red
+from app.pipelines.build_new_high import build_new_high
 from app.tasks.build_emotion_facts import run as run_build_emotion_facts
 from app.tasks.build_market_review import run as run_build_market_review
 from app.tasks.build_theme_pool import run as run_build_theme_pool
@@ -45,6 +46,9 @@ def run(
         trade_date=resolved_trade_date,
         top_n=consecutive_red_top_n,
     )
+    
+    # Build new high stocks
+    day_result["build_new_high"] = build_new_high(trade_date=resolved_trade_date)
 
     return {
         "trade_date": resolved_trade_date,
