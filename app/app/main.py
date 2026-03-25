@@ -15,6 +15,7 @@ from app.api.routes.emotion import router as emotion_router
 from app.api.routes.health import router as health_router
 from app.api.routes.kline import router as kline_router
 from app.api.routes.market_reviews import router as market_reviews_router
+from app.api.routes.new_high import router as new_high_router
 from app.api.routes.runs import router as runs_router
 from app.api.routes.trade_dates import router as trade_dates_router
 from app.api.routes.theme_pool import router as theme_pool_router
@@ -34,3 +35,4 @@ app.include_router(kline_router)
 app.include_router(market_reviews_router)
 app.include_router(emotion_router)
 app.include_router(consecutive_red_router)
+app.include_router(new_high_router)
