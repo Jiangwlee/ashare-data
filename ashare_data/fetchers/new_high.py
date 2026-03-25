@@ -16,6 +16,14 @@ from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
+# Import CDP fallback from ths_cdp module
+try:
+    from ashare_data.fetchers.ths_cdp import fetch_new_high_html_via_cdp
+    _CDP_AVAILABLE = True
+except Exception as exc:
+    logger.debug("CDP fallback not available: %s", exc)
+    _CDP_AVAILABLE = False
+
 # API URL for history high stocks (board=1 means 历史新高)
 _THS_NEW_HIGH_URL = "https://data.10jqka.com.cn/rank/cxg/board/1/field/stockcode/order/desc/ajax/1/free/1/"
 _THS_HEADERS = {
@@ -60,7 +68,23 @@ def fetch_new_high_stocks() -> list[NewHighStock]:
 
 
 def _fetch_html() -> str:
-    """Fetch HTML from THS API with proper headers and cookies."""
+    """Fetch HTML from THS API with proper headers and cookies.
+    
+    Falls back to CDP if requests return 401/403.
+    """
+    # Try requests first
+    try:
+        return _fetch_html_via_requests()
+    except (requests.HTTPError, requests.RequestException) as exc:
+        status_code = getattr(getattr(exc, "response", None), "status_code", None)
+        if status_code in (401, 403):
+            logger.warning("Requests returned %s, trying CDP fallback...", status_code)
+            return _fetch_html_via_cdp()
+        raise
+
+
+def _fetch_html_via_requests() -> str:
+    """Fetch HTML using requests library."""
     session = requests.Session()
     session.headers.update(_THS_HEADERS)
     
@@ -84,6 +108,17 @@ def _fetch_html() -> str:
     response = session.get(_THS_NEW_HIGH_URL, timeout=15)
     response.raise_for_status()
     return response.text
+
+
+def _fetch_html_via_cdp() -> str:
+    """Fetch HTML using Chrome CDP as fallback.
+    
+    This bypasses anti-bot detection by using a real browser context.
+    """
+    if not _CDP_AVAILABLE:
+        raise RuntimeError("CDP client not available and requests returned 401/403")
+    
+    return fetch_new_high_html_via_cdp(board="1")
 
 
 def _parse_html(html: str) -> list[NewHighStock]:

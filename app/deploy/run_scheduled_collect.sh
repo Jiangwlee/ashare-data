@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Export environment variables for cron
+export ASHARE_PLATFORM_HOME="${ASHARE_PLATFORM_HOME:-/data}"
+export ASHARE_THS_COOKIE="${ASHARE_THS_COOKIE:-}"
+export TZ="${TZ:-Asia/Shanghai}"
+
 cd /app
 
 python - <<'PY'
