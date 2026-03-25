@@ -80,6 +80,10 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 | `GET /market-reviews/daily/{trade_date}` | 获取每日市场回顾 |
 | `GET /trend-pool/daily/{trade_date}` | 获取趋势池 |
 | `GET /theme-pool/daily/{trade_date}` | 获取板块池 |
+| `GET /consecutive-red/daily/{trade_date}` | 获取连板股票 |
+| `GET /new-high/daily/{trade_date}` | 获取历史新高股票 |
+| `GET /new-high/stocks/{code}` | 获取股票新高历史 |
+| `GET /new-high/stats/breakthrough?days=N` | 近 N 天突破统计 |
 | `GET /trade-dates` | 获取交易日历 |
 
 ## 数据采集
@@ -108,6 +112,7 @@ trends = fetch_ths_snapshot()
 | `fetchers/market_sentiment.py` | 同花顺 | 涨跌停计数、封板率 |
 | `fetchers/market_breadth.py` | 搜狐/同花顺 | 涨跌平家数 |
 | `fetchers/broker_account.py` | JVQuant | 账户持仓、委托记录 |
+| `fetchers/new_high.py` | 同花顺 | 历史新高股票列表 |
 
 ## 数据存储
 
@@ -130,6 +135,8 @@ data/
 - `trend_pool_daily` - 每日趋势池
 - `theme_emotion_daily` - 板块情绪
 - `theme_stock_daily` - 板块成分股
+- `consecutive_red_daily` - 连板股票
+- `new_high_daily` - 历史新高股票
 - `runs` - 任务执行记录
 
 ## Chrome CDP
