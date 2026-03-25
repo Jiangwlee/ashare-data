@@ -237,6 +237,18 @@ docker run -d \
 
 ## 数据源开发
 
+### 已有 Fetcher 列表
+
+| 模块 | 数据源 | 用途 |
+|------|--------|------|
+| `new_high` | 同花顺数据中心 | 历史新高股票 |
+| `market_sentiment` | 东方财富 | 市场情绪指标 |
+| `trend_scanner` | 多源整合 | 趋势扫描 |
+| `consecutive_red` | 东财热度榜 | 连续 N 日收阳股票 |
+| `broker_account` | 龙虎榜数据 | 机构席位交易 |
+| `eastmoney_guba` | 东财股吧 | 个股讨论热度 |
+| `taoguba` | 淘股吧 | 论坛精华帖 |
+
 ### 添加新 fetcher
 
 1. 在 `ashare_data/fetchers/` 创建模块
