@@ -15,6 +15,9 @@ COPY app/alembic.ini /app/alembic.ini
 COPY app/alembic /app/alembic
 COPY app/deploy /app/deploy
 
+# Configure pip to use Tsinghua mirror for faster installation
+RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+
 RUN python -m pip install --upgrade pip \
     && python -m pip install . \
     && mkdir -p /var/log/supervisor \

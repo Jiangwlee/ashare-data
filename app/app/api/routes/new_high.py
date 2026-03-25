@@ -18,7 +18,7 @@ from app.repositories.new_high_repository import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["new-high"])
+router = APIRouter(prefix="/new-high", tags=["new-high"])
 
 
 @router.get("/daily/{trade_date}")

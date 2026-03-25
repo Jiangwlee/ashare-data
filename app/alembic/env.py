@@ -7,9 +7,19 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from app.db.session import engine
+from app.db.session import get_engine
 from app.models.base import Base
-from app.models import market_review_daily, run, theme_pool_daily, theme_stock_daily, trend_pool_daily  # noqa: F401
+from app.models import (
+    consecutive_red_daily,
+    market_review_daily,
+    new_high_daily,
+    run,
+    theme_pool_daily,
+    theme_stock_daily,
+    trend_pool_daily,
+)  # noqa: F401
+
+engine = get_engine()
 
 config = context.config
 
