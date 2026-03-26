@@ -76,13 +76,27 @@ class CdpPageSession:
         headers: dict[str, str] | None,
         parse_json: bool,
     ) -> str:
-        response_reader = "r.json()" if parse_json else "r.text()"
         success_field = '"data"' if parse_json else '"text"'
         js_headers = json.dumps(headers or {}, ensure_ascii=False)
+        if parse_json:
+            response_reader = "r.json()"
+            payload_expr = f"const payload = await {response_reader};"
+        else:
+            # Use ArrayBuffer + TextDecoder to respect the actual charset.
+            # Falls back to 'gbk' when the server omits a charset declaration
+            # (common for Chinese sites like THS that serve GBK HTML without
+            # an explicit Content-Type charset).
+            payload_expr = (
+                "const buf = await r.arrayBuffer();"
+                "const ct = r.headers.get('content-type') || '';"
+                "const m = ct.match(/charset=([^\\s;]+)/i);"
+                "const charset = m ? m[1] : 'gbk';"
+                "const payload = new TextDecoder(charset).decode(buf);"
+            )
         return (
             "(async () => {"
             f"const r = await fetch({json.dumps(url)}, {{credentials: 'include', headers: {js_headers}}});"
-            f"const payload = await {response_reader};"
+            f"{payload_expr}"
             f"return JSON.stringify({{ok: r.ok, status: r.status, {success_field}: payload}});"
             "})()"
         )
