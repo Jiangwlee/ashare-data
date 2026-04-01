@@ -1,6 +1,6 @@
 """Database models for the backend."""
 
-from app.models.consecutive_red_daily import ConsecutiveRedDaily
+from app.models.red_window_daily import RedWindowDaily
 from app.models.market_review_daily import MarketReviewDaily
 from app.models.market_emotion_daily import MarketEmotionDaily
 from app.models.new_high_daily import NewHighDaily
@@ -11,7 +11,7 @@ from app.models.theme_stock_daily import ThemeStockDaily
 from app.models.trend_pool_daily import TrendPoolDaily
 
 __all__ = [
-    "ConsecutiveRedDaily",
+    "RedWindowDaily",
     "MarketEmotionDaily",
     "MarketReviewDaily",
     "NewHighDaily",

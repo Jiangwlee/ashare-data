@@ -72,16 +72,26 @@ def build_red_for_n_days(
     *,
     trade_date: str | None = None,
     days: int = 7,
+    min_red: int | None = None,
     top_n: int = 1000,
     fetch_candidates: Callable[..., list[dict[str, Any]]] = fetch_eastmoney_popularity_rank,
     fetch_daily_kline: Callable[..., list[dict[str, Any]]] = fetch_jrj_daily_kline,
     fetch_latest_trade_date: Callable[[], str] = fetch_trade_date,
 ) -> dict[str, Any]:
-    """Filter popularity-ranked stocks by consecutive red daily candles."""
+    """Filter popularity-ranked stocks by red candle count in an N-day window.
+
+    Args:
+        min_red: Minimum number of red candles required. Defaults to ``days``
+                 (all candles must be red, i.e. original consecutive behaviour).
+    """
     if days <= 0:
         raise ValueError("days must be positive")
     if top_n <= 0:
         raise ValueError("top_n must be positive")
+
+    resolved_min_red = days if min_red is None else min_red
+    if not (1 <= resolved_min_red <= days):
+        raise ValueError(f"min_red must be between 1 and days ({days})")
 
     resolved_trade_date = _normalize_trade_date(trade_date, fetch_latest_trade_date)
     resolved_top_n = min(4000, top_n)
@@ -100,7 +110,8 @@ def build_red_for_n_days(
         )
         if len(bars) < days:
             return None, True
-        if not all(float(bar["close"]) >= float(bar["open"]) for bar in bars):
+        red_count = sum(1 for bar in bars if float(bar["close"]) >= float(bar["open"]))
+        if red_count < resolved_min_red:
             return None, False
         return (
             {
@@ -108,7 +119,7 @@ def build_red_for_n_days(
                 "sc": str(candidate.get("sc", "")),
                 "name": str(candidate.get("name", "")),
                 "rank": int(candidate.get("rank", 0) or 0),
-                "all_red": True,
+                "red_count": red_count,
                 "gain_n_days_pct": _calc_gain_n_days_pct(bars),
                 "bars": [_serialize_bar(bar) for bar in bars],
             },
@@ -130,6 +141,7 @@ def build_red_for_n_days(
         "run_id": run_id,
         "trade_date": resolved_trade_date,
         "days": days,
+        "min_red": resolved_min_red,
         "top_n": resolved_top_n,
         "candidate_count": len(candidates),
         "matched_count": len(matches),

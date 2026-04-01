@@ -1,6 +1,6 @@
-"""Consecutive red stocks repository.
+"""Red window stocks repository.
 
-Purpose: Database operations for ConsecutiveRedDaily model.
+Purpose: Database operations for RedWindowDaily model.
 """
 
 from __future__ import annotations
@@ -9,37 +9,34 @@ from datetime import datetime
 from typing import Any
 
 from app.db.session import open_session
-from app.models.consecutive_red_daily import ConsecutiveRedDaily
+from app.models.red_window_daily import RedWindowDaily
 
 
-def save_consecutive_red_stocks(
+def save_red_window_stocks(
     trade_date: str,
     run_id: str,
-    consecutive_days: int,
+    window_days: int,
     matches: list[dict[str, Any]],
 ) -> int:
-    """Save consecutive red stocks to database.
+    """Save red window stocks to database.
 
     Args:
         trade_date: Trading date in format YYYY-MM-DD
         run_id: Run identifier
-        consecutive_days: Number of consecutive days (5 or 7)
+        window_days: Observation window size (5 or 7)
         matches: List of matched stocks from build_red_for_n_days
 
     Returns:
         Number of records saved
     """
     with open_session() as session:
-        # Delete existing records for this date and consecutive_days
-        session.query(ConsecutiveRedDaily).filter_by(
+        session.query(RedWindowDaily).filter_by(
             trade_date=trade_date,
-            consecutive_days=consecutive_days,
+            window_days=window_days,
         ).delete()
 
-        # Insert new records
         count = 0
         for match in matches:
-            # Convert bars to simplified format with change_pct only
             bars_simplified = []
             bars = match.get("bars", [])
             for i, bar in enumerate(bars):
@@ -58,13 +55,14 @@ def save_consecutive_red_stocks(
                     }
                 )
 
-            record = ConsecutiveRedDaily(
+            record = RedWindowDaily(
                 trade_date=trade_date,
                 run_id=run_id,
                 code=match["code"],
                 name=match["name"],
                 sc=match["sc"],
-                consecutive_days=consecutive_days,
+                window_days=window_days,
+                red_count=match["red_count"],
                 rank=match["rank"],
                 gain_pct=match["gain_n_days_pct"],
                 bars_json=bars_simplified,
@@ -77,31 +75,36 @@ def save_consecutive_red_stocks(
         return count
 
 
-def get_consecutive_red_by_date(
+def get_red_window_by_date(
     trade_date: str,
-    consecutive_days: int | None = None,
-) -> list[ConsecutiveRedDaily]:
-    """Get consecutive red stocks for a specific date.
+    window_days: int | None = None,
+    min_red: int | None = None,
+) -> list[RedWindowDaily]:
+    """Get red window stocks for a specific date.
 
     Args:
         trade_date: Trading date in format YYYY-MM-DD
-        consecutive_days: Filter by specific days (5 or 7), or None for all
+        window_days: Filter by observation window (5 or 7), or None for all
+        min_red: Minimum red candle count filter, or None for all
 
     Returns:
-        List of ConsecutiveRedDaily records
+        List of RedWindowDaily records
     """
     with open_session() as session:
         query = (
-            session.query(ConsecutiveRedDaily)
+            session.query(RedWindowDaily)
             .filter_by(trade_date=trade_date)
             .order_by(
-                ConsecutiveRedDaily.consecutive_days.desc(),
-                ConsecutiveRedDaily.rank.asc(),
+                RedWindowDaily.window_days.desc(),
+                RedWindowDaily.rank.asc(),
             )
         )
 
-        if consecutive_days is not None:
-            query = query.filter_by(consecutive_days=consecutive_days)
+        if window_days is not None:
+            query = query.filter(RedWindowDaily.window_days == window_days)
+
+        if min_red is not None:
+            query = query.filter(RedWindowDaily.red_count >= min_red)
 
         return query.all()
 
@@ -121,8 +124,8 @@ def delete_old_records(retention_days: int = 30) -> int:
 
     with open_session() as session:
         result = (
-            session.query(ConsecutiveRedDaily)
-            .filter(ConsecutiveRedDaily.trade_date < cutoff_date)
+            session.query(RedWindowDaily)
+            .filter(RedWindowDaily.trade_date < cutoff_date)
             .delete()
         )
         session.commit()
