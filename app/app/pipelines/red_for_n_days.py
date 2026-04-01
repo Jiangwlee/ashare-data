@@ -73,6 +73,7 @@ def build_red_for_n_days(
     trade_date: str | None = None,
     days: int = 7,
     min_red: int | None = None,
+    min_gain_pct: float = 0.0,
     top_n: int = 1000,
     fetch_candidates: Callable[..., list[dict[str, Any]]] = fetch_eastmoney_popularity_rank,
     fetch_daily_kline: Callable[..., list[dict[str, Any]]] = fetch_jrj_daily_kline,
@@ -113,6 +114,9 @@ def build_red_for_n_days(
         red_count = sum(1 for bar in bars if float(bar["close"]) >= float(bar["open"]))
         if red_count < resolved_min_red:
             return None, False
+        gain = _calc_gain_n_days_pct(bars)
+        if gain < min_gain_pct:
+            return None, False
         return (
             {
                 "code": str(candidate.get("code", "")),
@@ -120,7 +124,7 @@ def build_red_for_n_days(
                 "name": str(candidate.get("name", "")),
                 "rank": int(candidate.get("rank", 0) or 0),
                 "red_count": red_count,
-                "gain_n_days_pct": _calc_gain_n_days_pct(bars),
+                "gain_n_days_pct": gain,
                 "bars": [_serialize_bar(bar) for bar in bars],
             },
             False,
@@ -142,6 +146,7 @@ def build_red_for_n_days(
         "trade_date": resolved_trade_date,
         "days": days,
         "min_red": resolved_min_red,
+        "min_gain_pct": min_gain_pct,
         "top_n": resolved_top_n,
         "candidate_count": len(candidates),
         "matched_count": len(matches),

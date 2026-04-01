@@ -14,8 +14,8 @@ from app.repositories import red_window_repository
 
 logger = logging.getLogger(__name__)
 
-# Ingestion criteria: (window_days, min_red)
-_SCAN_CONFIGS: list[tuple[int, int]] = [(5, 4), (7, 6)]
+# Ingestion criteria: (window_days, min_red, min_gain_pct)
+_SCAN_CONFIGS: list[tuple[int, int, float]] = [(5, 4, 10.0), (7, 6, 10.0)]
 
 
 def build_red_window(
@@ -53,14 +53,15 @@ def build_red_window(
         "top_n": top_n,
     }
 
-    for window_days, min_red in _SCAN_CONFIGS:
+    for window_days, min_red, min_gain_pct in _SCAN_CONFIGS:
         key = f"days_{window_days}_min_{min_red}"
         try:
-            logger.info("Scanning %d-day window, min_red=%d...", window_days, min_red)
+            logger.info("Scanning %d-day window, min_red=%d, min_gain=%.1f%%...", window_days, min_red, min_gain_pct)
             scan_result = build_red_for_n_days(
                 trade_date=trade_date,
                 days=window_days,
                 min_red=min_red,
+                min_gain_pct=min_gain_pct,
                 top_n=top_n,
             )
             count = red_window_repository.save_red_window_stocks(
