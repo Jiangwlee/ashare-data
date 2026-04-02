@@ -154,3 +154,88 @@ class ThemeEmotionDailyResponse(BaseModel):
     risk_score: float | None = None
     theme_cycle_hint: str | None = None
     evidence_json: dict | list | None = None
+
+
+class StockThemeTagResponse(BaseModel):
+    theme_name: str
+    role_in_theme: str | None = None
+    rank_in_theme: int
+    theme_rank: int | None = None
+    theme_cycle_hint: str | None = None
+    theme_heat_score: float | None = None
+    theme_limit_up_num: int | None = None
+    theme_rank_3d_delta: int | None = None
+    is_theme_leader: bool
+    leader_names: list[str]
+
+
+class ForecastYearData(BaseModel):
+    year: str
+    is_actual: bool
+    revenue: str | None = None
+    revenue_growth: str | None = None
+    net_profit: str | None = None
+    net_profit_growth: str | None = None
+    eps: str | None = None
+    bvps: str | None = None
+    roe: str | None = None
+    cfps: str | None = None
+    pe_dynamic: str | None = None
+
+
+class FundamentalRatings(BaseModel):
+    buy: int = 0
+    outperform: int = 0
+    neutral: int = 0
+    underperform: int = 0
+    sell: int = 0
+
+
+class FundamentalSummaryResponse(BaseModel):
+    code: str
+    analyst_count: int
+    ratings: FundamentalRatings
+    forecast_years: list[ForecastYearData]
+
+
+# ── C5: Stock candidates ──────────────────────────────────────────────────────
+
+class CandidateBarItem(BaseModel):
+    date: str
+    change_pct: float
+
+
+class StockCandidateItem(BaseModel):
+    code: str
+    name: str
+    source: str  # "consecutive_red" | "new_high" | "both"
+
+    # Consecutive red fields (None when source == "new_high")
+    consecutive_up_days: int | None = None
+    period_gain_pct: float | None = None
+    bars: list[CandidateBarItem] | None = None
+
+    # New high fields (None when source == "consecutive_red")
+    prev_high: float | None = None
+    prev_high_date: str | None = None
+    change_pct_today: float | None = None
+    turnover_rate: float | None = None
+
+    # Theme intersection
+    primary_theme: str | None = None
+    primary_theme_rank: int | None = None
+    primary_theme_cycle_hint: str | None = None
+    role_in_primary_theme: str | None = None
+    theme_resonance: bool = False
+
+    # One-price-board (一字板) heuristic — last bar change_pct >= 9.5%
+    prev_day_yizi: bool = False
+
+
+class CandidatesResponse(BaseModel):
+    trade_date: str
+    total: int
+    consecutive_red_count: int
+    new_high_count: int
+    both_count: int
+    candidates: list[StockCandidateItem]

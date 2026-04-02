@@ -19,6 +19,7 @@ from app.api.routes.new_high import router as new_high_router
 from app.api.routes.runs import router as runs_router
 from app.api.routes.trade_dates import router as trade_dates_router
 from app.api.routes.theme_pool import router as theme_pool_router
+from app.api.routes.stocks import router as stocks_router
 from app.api.routes.trend_pool import router as trend_pool_router
 
 app = FastAPI(
@@ -36,3 +37,4 @@ app.include_router(market_reviews_router)
 app.include_router(emotion_router)
 app.include_router(red_window_router)
 app.include_router(new_high_router)
+app.include_router(stocks_router)

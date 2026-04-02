@@ -20,6 +20,7 @@ from app.tasks.collect_all import run as run_collect_all
 from app.tasks.cleanup_ephemeral_data import run as run_cleanup_ephemeral_data
 from app.tasks.collect_ephemeral import run as run_collect_ephemeral
 from app.tasks.init_data import run as run_init_data
+from app.tasks.collect_theme_members import run as run_collect_theme_members
 from app.tasks.red_for_n_days import run as run_red_for_n_days
 
 TaskFn = Callable[..., dict[str, Any]]
@@ -71,6 +72,17 @@ def _build_parser() -> argparse.ArgumentParser:
     cleanup = subparsers.add_parser("cleanup-ephemeral-data", help="Clean expired ephemeral files")
     cleanup.add_argument("--max-age-days", type=int, default=3)
 
+    theme_members = subparsers.add_parser(
+        "collect-theme-members",
+        help="Scrape THS concept member lists and upsert into theme_member_stock",
+    )
+    theme_members.add_argument(
+        "--concept-ids",
+        nargs="+",
+        dest="concept_ids",
+        help="Optional list of concept IDs to scrape (default: all ~362)",
+    )
+
     red = subparsers.add_parser(
         "red-for-n-days",
         help="Screen Eastmoney popularity names whose last N trading days close at or above open",
@@ -119,6 +131,8 @@ def _dispatch(args: argparse.Namespace) -> dict[str, Any]:
         return run_build_market_review(trade_date=args.trade_date)
     if args.command == "cleanup-ephemeral-data":
         return run_cleanup_ephemeral_data(max_age_days=args.max_age_days)
+    if args.command == "collect-theme-members":
+        return run_collect_theme_members(concept_ids=args.concept_ids)
     if args.command == "red-for-n-days":
         return run_red_for_n_days(
             trade_date=args.trade_date,
