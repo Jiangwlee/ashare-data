@@ -7,10 +7,12 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 
 from ashare_data.core.http_client import http_json
 
 logger = logging.getLogger(__name__)
+_CST = timezone(timedelta(hours=8))
 
 _THS_TURNOVER_URL = (
     "https://dq.10jqka.com.cn/fuyao/market_analysis_api/chart/v1/get_chart_data?chart_key=turnover_day"
@@ -46,16 +48,20 @@ def fetch_market_turnover_for_date(trade_date: str) -> MarketTurnover:
         return MarketTurnover(trade_date=trade_date)
 
     charts = ((resp.get("data") or {}).get("charts") or {})
-    labels = charts.get("x_label_list") or []
     points = charts.get("point_list") or []
     target_date = f"{trade_date[:4]}-{trade_date[4:6]}-{trade_date[6:]}"
 
-    for label, point in zip(labels, points):
-        if label != target_date or not isinstance(point, list) or len(point) < 2:
+    for point in points:
+        if not isinstance(point, list) or len(point) < 2:
             continue
-        turnover_raw = point[1]
         try:
-            market_volume = round(float(turnover_raw) / 100000000, 2)
+            point_date = datetime.fromtimestamp(point[0] / 1000, tz=_CST).strftime("%Y-%m-%d")
+        except (TypeError, ValueError, OSError):
+            continue
+        if point_date != target_date:
+            continue
+        try:
+            market_volume = round(float(point[1]) / 100000000, 2)
         except (TypeError, ValueError):
             market_volume = None
         return MarketTurnover(trade_date=trade_date, market_volume=market_volume)
